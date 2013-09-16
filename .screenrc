@@ -1,0 +1,29 @@
+shell -$SHELL 
+
+escape "^Oo"
+defescape "^Oo"
+defscrollback 10000
+altscreen off
+
+
+
+startup_message off
+vbell off
+
+#termcapinfo xterm ti@:te@   #to use xterm's buffer for history
+
+shelltitle '> |bash'
+
+#hardstatus alwayslastline '%{= .b}%{+} %= %-w %{= .yb} %n:[%t] %{= db} %+w %{= .y}time: [%c]'
+
+#it's better to use caption for the status line, because hardstatus line can be used for the title of the window
+
+#google for 'gnu screen escape' characters
+
+hardstatus string '%h [%t]' # %h gives $PS1
+#caption always '%{= .b}%{+} %= %-w %{= .yb} %n:[%t] %{= db} %+w %{= .y}time: [%c]'
+caption always '%{= dg} %{G}%=%{d}%-w%{r}%>(%{d}%n %t%{r})%{d}%+w%=%{G}%-18= | %{B}%M %d %c:%s'
+
+#   '%number=' sets padding (wyrownanie) of the string up to the given location. '%>' tells where the string should be truncated
+
+bind d eval 'clear' 'detach'
