@@ -8,6 +8,9 @@ git init
 
 git remote add origin https://github.com/wronan/linux
 
+git pull origin maste
+
+#to set the repo for default pull/push:
+
 git branch --set-upstream master origin/master
 
-git pull
