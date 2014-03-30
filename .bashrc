@@ -4,6 +4,19 @@
 # If not running interactively, don't do anything
 [ -z "$PS1" ] && return
 
+alias ssh-uio='ssh pawelaw@math.uio.no'
+alias ssh-dagda='ssh pawelaw@math.uio.no -L 8081:dagda.uio.no:22 -t "ssh dagda"'
+alias ssh-omeyocan='ssh pawelaw@math.uio.no -L 8082:omeyocan.uio.no:22 -t "ssh omeyocan"'
+
+alias mount-uio='sshfs pawelaw@math.uio.no: $HOME/work'
+alias mount-dagda='sshfs -p 8081 pawelaw@localhost:/work $HOME/work-dagda'
+alias mount-omeyocan='sshfs -p 8082 pawelaw@localhost:/work $HOME/work-omeyocan'
+alias mount-all='mount-uio; mount-dagda; mount-omeyocan'
+alias umount-uio='fusermount -u $HOME/work'
+alias umount-dagda='fusermount -u $HOME/work-dagda; umount-uio'
+alias umount-omeyocan='fusermount -u $HOME/work-omeyocan'
+alias umount-all='fusermount -u $HOME/work;fusermount -u $HOME/work-dagda;fusermount -u $HOME/work-omeyocan'
+
 # gvim () { command gvim --remote-silent "$@" || command gvim "$@"; }
 alias gvim='gvim --remote-tab-silent'
 
