@@ -1,8 +1,18 @@
 # ~/.bashrc: executed by bash(1) for non-login shells.
-# see /usr/share/doc/bash/examples/startup-files (in the package bash-doc)
-# for examples
+# see /usr/share/doc/bash/examples/startup-files (in the package bash-doc) for examples
 # If not running interactively, don't do anything
 [ -z "$PS1" ] && return
+
+alias gvim='gvim --remote-tab-silent'
+export AOS="$HOME/host/aos-root/server-core.fwk.python-core-container"
+alias mount-host='sudo mount -t vboxsf share ~/host'
+alias zookeeper='sudo /usr/share/zookeeper/bin/zkServer.sh'
+alias zkClient='sudo /usr/share/zookeeper/bin/zkCli.sh'
+alias find_my_commits="git log --author 'Wroniszewski' --pretty=format:'%s %H %an %ad' --since='1 04 2014' --until='31 04 2014' | sort -k 1"
+
+#VIRTUAL ENVIRONMENT
+export WORKON_HOME=$HOME
+source /usr/local/bin/virtualenvwrapper.sh
 
 alias ssh-uio='ssh pawelaw@math.uio.no'
 alias ssh-dagda='ssh pawelaw@math.uio.no -L 8081:dagda.uio.no:22 -t "ssh dagda"'
