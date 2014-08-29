@@ -4,10 +4,15 @@
 [ -z "$PS1" ] && return
 
 #ADVA OS
+alias scala-container='sudo /opt/adva/nc/app-tier-scala-container/bin/KARAF-service'
 alias mount-host='sudo mount -t vboxsf share ~/host'
 alias zookeeper='sudo /opt/adva/nc/zookeeper/bin/zkServer.sh'
 alias zkClient='sudo /opt/adva/nc/zookeeper/bin/zkCli.sh'
-alias find_my_commits="git log --author 'Wroniszewski' --pretty=format:'%s %H %an %ad' --since='1 04 2014' --until='31 04 2014' | sort -k 1"
+alias prawa_autorskie="git log --author 'Wroniszewski' --pretty=format:'%ad %H %an %s' --date=short | sort -k 4 | sort -s -k 1,1.7"
+export PATH=$PATH:$HOME/bin/apache-maven-3.2.1/bin
+export PATH=$PATH:$HOME/workspace/arc/arcanist/bin
+export SIT_AUTOMATION_PATH="$HOME/workspace1/aos-sit-automation"
+alias scala-run="git --work-tree=$HOME/workspace1/aos-sit-automation --git-dir=$HOME/workspace1/aos-sit-automation/.git pull; $HOME/workspace1/aos-sit-automation/NetworkController/Automation/scala/scala_run.sh"
 
 #VIRTUAL ENVIRONMENT
 export WORKON_HOME=$HOME
