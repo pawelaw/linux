@@ -5,15 +5,21 @@
 
 #ADVA OS
 alias scala-container='sudo /opt/adva/nc/app-tier-scala-container/bin/KARAF-service'
-alias mount-host='sudo mount -t vboxsf share ~/host'
+alias karaf='sudo /opt/adva/nc/app-tier-scala-container/bin/KARAF'
+alias mount-host='sudo mount -t vboxsf share ~/share'
 alias zookeeper='sudo /opt/adva/nc/zookeeper/bin/zkServer.sh'
 alias zkClient='sudo /opt/adva/nc/zookeeper/bin/zkCli.sh'
-alias prawa_autorskie="git log --author 'Wroniszewski' --pretty=format:'%ad %H %an %s' --date=short | sort -k 4 | sort -s -k 1,1.7"
+alias prawa_autorskie="git log --author 'Wroniszewski' --pretty=format:'%ad %h %an %s' --date=short | sort -k 4 | sort -s -k 1,1.7"
 export PATH=$PATH:$HOME/bin/apache-maven-3.2.1/bin
-export PATH=$PATH:$HOME/workspace/arc/arcanist/bin
-export SIT_AUTOMATION_PATH="$HOME/workspace1/aos-sit-automation"
-alias scala-run="git --work-tree=$HOME/workspace1/aos-sit-automation --git-dir=$HOME/workspace1/aos-sit-automation/.git pull; $HOME/workspace1/aos-sit-automation/NetworkController/Automation/scala/scala_run.sh"
-
+export PATH=$PATH:$HOME/bin/arc/arcanist/bin
+export SIT_AUTOMATION_PATH="$HOME/Projects/aos-sit-automation"
+alias scala-run="git --work-tree=$SIT_AUTOMATION_PATH --git-dir=$SIT_AUTOMATION_PATH/.git pull; $SIT_AUTOMATION_PATH/NetworkController/Automation/scala/scala_run.sh"
+alias clean-mongo="mongo localhost/nc -u aos -p ChgMeNOW --eval \"db.getCollectionNames().map(function(collection) { var skip = ['system.indexes', 'system.users']; if (skip.indexOf(collection) == -1) { db[collection].drop(); }; })\""
+alias ssh-karaf="ssh-keygen -f '$HOME/.ssh/known_hosts' -R [localhost]:8101; ssh -p 8101 karaf@localhost"
+#export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/AOS_BUILD_VE/lib/python2.7/site-packages
+export AOS_NE_INSTALL_DIR=$HOME/ec
+#export PYTHONPATH=$PYTHONPATH:$AOS_NE_INSTALL_DIR/lib
+#export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$AOS_NE_INSTALL_DIR/lib
 #VIRTUAL ENVIRONMENT
 export WORKON_HOME=$HOME
 source /usr/local/bin/virtualenvwrapper.sh
@@ -34,6 +40,8 @@ alias umount-all='fusermount -u $HOME/work;fusermount -u $HOME/work-dagda;fuserm
 
 # gvim () { command gvim --remote-silent "$@" || command gvim "$@"; }
 alias gvim='gvim --remote-tab-silent'
+
+alias ipy="python -c 'import IPython; IPython.terminal.ipapp.launch_new_instance()'"
 
 HISTCONTROL=ignoreboth
 shopt -s histappend
@@ -118,3 +126,6 @@ fi
 if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
     . /etc/bash_completion
 fi
+
+source $HOME/bin/arc/arcanist/resources/shell/bash-completion
+
