@@ -21,6 +21,8 @@ alias scala-run="git --work-tree=$SIT_AUTOMATION_PATH --git-dir=$SIT_AUTOMATION_
 alias monolithic-upgrade="$SIT_AUTOMATION_PATH/ElementController/Utilities/monolithic_upgrade.sh $ec_address"
 alias clean-mongo="mongo localhost/nc -u aos -p ChgMeNOW --eval \"db.getCollectionNames().map(function(collection) { var skip = ['system.indexes', 'system.users']; if (skip.indexOf(collection) == -1) { db[collection].drop(); }; })\""
 alias ssh-karaf="ssh-keygen -f '$HOME/.ssh/known_hosts' -R [localhost]:8101; ssh -p 8101 karaf@localhost"
+alias monolithic_upgrade="$SIT_AUTOMATION_PATH/ElementController/Utilities/monolithic_upgrade.sh "
+alias aos_get_token="curl -v -X POST -H \"Content-Type: application/json+nicknames\" --data '{\"in\":{\"un\":\"admin\",\"pswd\":\"CHGME.1\"}}'  http://localhost:8888/aos-api\?actn\=lgin | grep Server"
 #export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/AOS_BUILD_VE/lib/python2.7/site-packages
 export AOS_NE_INSTALL_DIR=$HOME/ec
 #export PYTHONPATH=$PYTHONPATH:$AOS_NE_INSTALL_DIR/lib
