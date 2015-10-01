@@ -5,10 +5,10 @@
 
 #ADVA OS
 
-export ec_address=10.143.3.24
+export aos_ec_address=10.143.3.21
 
-alias scala-container='sudo /opt/adva/nc/app-tier-scala-container/bin/KARAF-service'
-alias karaf='sudo /opt/adva/nc/app-tier-scala-container/bin/KARAF'
+alias aos_scala_container='sudo /opt/adva/nc/app-tier-scala-container/bin/KARAF-service'
+alias aos_karaf='sudo /opt/adva/nc/app-tier-scala-container/bin/KARAF'
 alias mount-host='sudo mount -t vboxsf share ~/share'
 alias zookeeper='sudo /opt/adva/nc/zookeeper/bin/zkServer.sh'
 alias zkClient='sudo /opt/adva/nc/zookeeper/bin/zkCli.sh'
@@ -16,15 +16,13 @@ alias prawa_autorskie="git log --author 'Wroniszewski' --pretty=format:'%ad %h %
 export PATH=$PATH:$HOME/bin/apache-maven-3.2.1/bin
 export PATH=$PATH:$HOME/bin/arc/arcanist/bin
 export SIT_AUTOMATION_PATH="$HOME/workspace/aos-sit-automation"
-alias scala-run="git --work-tree=$SIT_AUTOMATION_PATH --git-dir=$SIT_AUTOMATION_PATH/.git pull; $SIT_AUTOMATION_PATH/NetworkController/Automation/scala/scala_run.sh"
-# alias monolithic-upgrade="git --work-tree=$SIT_AUTOMATION_PATH --git-dir=$SIT_AUTOMATION_PATH/.git pull; $SIT_AUTOMATION_PATH/ElementController/Utilities/monolithic_upgrade.sh $ec_address"
-alias monolithic-upgrade="$SIT_AUTOMATION_PATH/ElementController/Utilities/monolithic_upgrade.sh $ec_address"
-alias clean-mongo="mongo localhost/nc -u aos -p ChgMeNOW --eval \"db.getCollectionNames().map(function(collection) { var skip = ['system.indexes', 'system.users']; if (skip.indexOf(collection) == -1) { db[collection].drop(); }; })\""
-alias ssh-karaf="ssh-keygen -f '$HOME/.ssh/known_hosts' -R [localhost]:8101; ssh -p 8101 karaf@localhost"
-alias monolithic_upgrade="$SIT_AUTOMATION_PATH/ElementController/Utilities/monolithic_upgrade.sh "
-alias aos_get_token="curl -v -X POST -H \"Content-Type: application/json+nicknames\" --data '{\"in\":{\"un\":\"admin\",\"pswd\":\"CHGME.1\"}}'  http://localhost:8888/aos-api\?actn\=lgin | grep Server"
+alias aos_scala_run="git --work-tree=$SIT_AUTOMATION_PATH --git-dir=$SIT_AUTOMATION_PATH/.git pull; $SIT_AUTOMATION_PATH/NetworkController/Automation/scala/scala_run.sh"
+# alias monolithic-upgrade="git --work-tree=$SIT_AUTOMATION_PATH --git-dir=$SIT_AUTOMATION_PATH/.git pull; $SIT_AUTOMATION_PATH/ElementController/Utilities/monolithic_upgrade.sh $aos_ec_address"
+alias aos_monolithic-upgrade="cd $SIT_AUTOMATION_PATH/ElementController/Utilities; ./monolithic_upgrade.sh $aos_ec_address"
+alias aos_clean_mongo="mongo localhost/nc -u aos -p ChgMeNOW --eval \"db.getCollectionNames().map(function(collection) { var skip = ['system.indexes', 'system.users']; if (skip.indexOf(collection) == -1) { db[collection].drop(); }; })\""
+alias aos_ssh_karaf="ssh-keygen -f '$HOME/.ssh/known_hosts' -R [localhost]:8101; ssh -p 8101 karaf@localhost"
 #export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/AOS_BUILD_VE/lib/python2.7/site-packages
-export AOS_NE_INSTALL_DIR=$HOME/ec
+export AOS_HOME=$HOME/ec
 #export PYTHONPATH=$PYTHONPATH:$AOS_NE_INSTALL_DIR/lib
 #export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$AOS_NE_INSTALL_DIR/lib
 #VIRTUAL ENVIRONMENT
@@ -32,18 +30,18 @@ export WORKON_HOME=$HOME
 source /usr/local/bin/virtualenvwrapper.sh
 
 #UIO
-alias ssh-uio='ssh pawelaw@math.uio.no'
-alias ssh-dagda='ssh pawelaw@math.uio.no -L 8081:dagda.uio.no:22 -t "ssh dagda"'
-alias ssh-omeyocan='ssh pawelaw@math.uio.no -L 8082:omeyocan.uio.no:22 -t "ssh omeyocan"'
+alias uio_ssh-uio='ssh pawelaw@math.uio.no'
+alias uio_ssh-dagda='ssh pawelaw@math.uio.no -L 8081:dagda.uio.no:22 -t "ssh dagda"'
+alias uio_ssh-omeyocan='ssh pawelaw@math.uio.no -L 8082:omeyocan.uio.no:22 -t "ssh omeyocan"'
 
-alias mount-uio='sshfs pawelaw@math.uio.no: $HOME/work'
-alias mount-dagda='sshfs -p 8081 pawelaw@localhost:/work $HOME/work-dagda'
-alias mount-omeyocan='sshfs -p 8082 pawelaw@localhost:/work $HOME/work-omeyocan'
-alias mount-all='mount-uio; mount-dagda; mount-omeyocan'
-alias umount-uio='fusermount -u $HOME/work'
-alias umount-dagda='fusermount -u $HOME/work-dagda; umount-uio'
-alias umount-omeyocan='fusermount -u $HOME/work-omeyocan'
-alias umount-all='fusermount -u $HOME/work;fusermount -u $HOME/work-dagda;fusermount -u $HOME/work-omeyocan'
+alias uio_mount-uio='sshfs pawelaw@math.uio.no: $HOME/work'
+alias uio_mount-dagda='sshfs -p 8081 pawelaw@localhost:/work $HOME/work-dagda'
+alias uio_mount-omeyocan='sshfs -p 8082 pawelaw@localhost:/work $HOME/work-omeyocan'
+alias uio_mount-all='mount-uio; mount-dagda; mount-omeyocan'
+alias uio_umount-uio='fusermount -u $HOME/work'
+alias uio_umount-dagda='fusermount -u $HOME/work-dagda; umount-uio'
+alias uio_umount-omeyocan='fusermount -u $HOME/work-omeyocan'
+alias uio_umount-all='fusermount -u $HOME/work;fusermount -u $HOME/work-dagda;fusermount -u $HOME/work-omeyocan'
 
 # gvim () { command gvim --remote-silent "$@" || command gvim "$@"; }
 alias gvim='gvim --remote-tab-silent'
