@@ -4,6 +4,9 @@
 [ -z "$PS1" ] && return
 
 #ADVA OS
+
+export ec_address=10.143.3.24
+
 alias scala-container='sudo /opt/adva/nc/app-tier-scala-container/bin/KARAF-service'
 alias karaf='sudo /opt/adva/nc/app-tier-scala-container/bin/KARAF'
 alias mount-host='sudo mount -t vboxsf share ~/share'
@@ -12,8 +15,10 @@ alias zkClient='sudo /opt/adva/nc/zookeeper/bin/zkCli.sh'
 alias prawa_autorskie="git log --author 'Wroniszewski' --pretty=format:'%ad %h %an %s' --date=short | sort -k 4 | sort -s -k 1,1.7"
 export PATH=$PATH:$HOME/bin/apache-maven-3.2.1/bin
 export PATH=$PATH:$HOME/bin/arc/arcanist/bin
-export SIT_AUTOMATION_PATH="$HOME/Projects/aos-sit-automation"
+export SIT_AUTOMATION_PATH="$HOME/workspace/aos-sit-automation"
 alias scala-run="git --work-tree=$SIT_AUTOMATION_PATH --git-dir=$SIT_AUTOMATION_PATH/.git pull; $SIT_AUTOMATION_PATH/NetworkController/Automation/scala/scala_run.sh"
+# alias monolithic-upgrade="git --work-tree=$SIT_AUTOMATION_PATH --git-dir=$SIT_AUTOMATION_PATH/.git pull; $SIT_AUTOMATION_PATH/ElementController/Utilities/monolithic_upgrade.sh $ec_address"
+alias monolithic-upgrade="$SIT_AUTOMATION_PATH/ElementController/Utilities/monolithic_upgrade.sh $ec_address"
 alias clean-mongo="mongo localhost/nc -u aos -p ChgMeNOW --eval \"db.getCollectionNames().map(function(collection) { var skip = ['system.indexes', 'system.users']; if (skip.indexOf(collection) == -1) { db[collection].drop(); }; })\""
 alias ssh-karaf="ssh-keygen -f '$HOME/.ssh/known_hosts' -R [localhost]:8101; ssh -p 8101 karaf@localhost"
 #export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/AOS_BUILD_VE/lib/python2.7/site-packages

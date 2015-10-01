@@ -22,7 +22,7 @@ shelltitle '> |bash'
 
 hardstatus string '%h [%t]' # %h gives $PS1
 #caption always '%{= .b}%{+} %= %-w %{= .yb} %n:[%t] %{= db} %+w %{= .y}time: [%c]'
-caption always '%{= dg} %{G}%=%{d}%-w%{r}%>(%{d}%n %t%{r})%{d}%+w%=%{G}%-18= | %{B}%M %d %c:%s'
+caption always '%{= dg} %{G}%=%{d}%-w%{r}%>(%{d}%n %t%{r})%{d}%+w%=%{G}%-20= | %{B}%y.%m.%d %c:%s'
 
 #   '%number=' sets padding (wyrownanie) of the string up to the given location. '%>' tells where the string should be truncated
 
