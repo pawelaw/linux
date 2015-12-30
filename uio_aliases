@@ -1,0 +1,14 @@
+#UIO
+alias uio_ssh-uio='ssh pawelaw@math.uio.no'
+alias uio_ssh-dagda='ssh pawelaw@math.uio.no -L 8081:dagda.uio.no:22 -t "ssh dagda"'
+alias uio_ssh-omeyocan='ssh pawelaw@math.uio.no -L 8082:omeyocan.uio.no:22 -t "ssh omeyocan"'
+
+alias uio_mount-uio='sshfs pawelaw@math.uio.no: $HOME/work'
+alias uio_mount-dagda='sshfs -p 8081 pawelaw@localhost:/work $HOME/work-dagda'
+alias uio_mount-omeyocan='sshfs -p 8082 pawelaw@localhost:/work $HOME/work-omeyocan'
+alias uio_mount-all='mount-uio; mount-dagda; mount-omeyocan'
+alias uio_umount-uio='fusermount -u $HOME/work'
+alias uio_umount-dagda='fusermount -u $HOME/work-dagda; umount-uio'
+alias uio_umount-omeyocan='fusermount -u $HOME/work-omeyocan'
+alias uio_umount-all='fusermount -u $HOME/work;fusermount -u $HOME/work-dagda;fusermount -u $HOME/work-omeyocan'
+

@@ -1,0 +1,112 @@
+#ADVA OS
+
+#VIRTUAL ENVIRONMENT
+export WORKON_HOME=$HOME/AOS
+
+
+export PATH=$PATH:$HOME/bin/apache-maven-3.2.1/bin
+export PATH=$PATH:$HOME/bin/arc/arcanist/bin
+export AOS_SIT_AUTOMATION_PATH="$HOME/workspace/aos-sit-automation"
+
+export AOS_GE112_ADDRESS=10.143.3.21
+export AOS_F8_ADDRESS=10.10.37.227
+
+
+alias zookeeper='sudo /opt/adva/nc/zookeeper/bin/zkServer.sh'
+alias zkClient='sudo /opt/adva/nc/zookeeper/bin/zkCli.sh'
+
+alias aos_karaf='sudo /opt/adva/nc/app-tier-scala-container/bin/KARAF'
+alias aos_ssh_karaf="ssh-keygen -f '$HOME/.ssh/known_hosts' -R [localhost]:8101; ssh -p 8101 karaf@localhost"
+alias aos_scala_container='sudo /opt/adva/nc/app-tier-scala-container/bin/KARAF-service'
+alias aos_scala_run="git --work-tree=$AOS_SIT_AUTOMATION_PATH --git-dir=$AOS_SIT_AUTOMATION_PATH/.git pull; $AOS_SIT_AUTOMATION_PATH/NetworkController/Automation/scala/scala_run.sh"
+alias aos_monolithic_upgrade="cd $AOS_SIT_AUTOMATION_PATH/ElementController/Utilities; git pull; ./monolithic_upgrade.sh $AOS_GE112_ADDRESS"
+alias aos_ssh_ge112="ssh root@$AOS_GE112_ADDRESS"
+alias aos_clean_mongo="mongo localhost/nc -u aos -p ChgMeNOW --eval \"db.getCollectionNames().map(function(collection) { var skip = ['system.indexes', 'system.users']; if (skip.indexOf(collection) == -1) { db[collection].drop(); }; })\""
+alias aos_clean_zookeeper=$HOME/workspace/aos-common-python-container/build/tools/clean_zk.py
+alias aos_restart_scala="aos_scala_container stop; aos_clean_mongo; aos_clean_zookeeper; aos_scala_container start"
+alias aos_link_adjuncts="rm ~/ec/share/cim/adjunct/* ; cp -s ~/workspace/aos-common-cim-aos-model/*/src/main/adjunct/*json ~/ec/share/cim/adjunct/"
+alias aos_copy_adjuncts="rm ~/ec/share/cim/adjunct/* ; cp ~/workspace/aos-common-cim-aos-model/*/src/main/adjunct/*json ~/ec/share/cim/adjunct/"
+export AOS_HOME="$HOME/ec"
+
+aos_apl_setup(){
+    sudo modprobe tipc
+    mkdir $AOS_HOME/log; mkdir $AOS_HOME/db; 
+    chmod a+x $AOS_HOME/etc/scripts/run_apl.sh; 
+    sed -e 's/\"use-local\" : false/\"use-local\" : true/g' -e 's/eth1/eth0/' -i $AOS_HOME/etc/core-apps/equipment/EqptConfig.json; 
+    sed -e "s:^IMAGE_DIR.*:IMAGE_DIR=$AOS_HOME:" -e "s:^LOG_DIR.*:LOG_DIR=$AOS_HOME/log:" -e "s:^DB_DIR.*:DB_DIR=$AOS_HOME/db:" -i $AOS_HOME/etc/scripts/run_apl_config.sh
+}
+
+aos_apl_start(){
+    sudo rm $AOS_HOME/log/* $AOS_HOME/db/* -rf
+    sudo $AOS_SIT_AUTOMATION_PATH/ElementController/Utilities/killAos.sh
+    sudo $AOS_HOME/etc/scripts/run_apl.sh $AOS_HOME/etc/scripts/run_apl_config.sh
+}
+
+aos_get_token(){
+    if [ -z "$1" ]; 
+    then
+        echo "usage: $FUNCNAME <ip address>"
+    else
+        target=$1
+        hdr1="Content-Type:application/json+nicknames"
+        body='{"in":{"pswd":"CHGME.1","un":"admin"}}'
+        uri="https://$target:8888/aos-api?actn=lgin"
+        export TOKEN="$(curl -i --silent --insecure -X POST -H "$hdr1" -d $body $uri | grep X-Auth-Token: | sed -e 's/X-Auth-Token: //g')"
+        echo $TOKEN
+    fi
+}
+
+aos_logout(){
+    if [ -z "$1" ]; 
+    then
+        echo "usage: $FUNCNAME <ip address>"
+    else
+        target=$1
+        hdr1="Content-Type:application/json+nicknames"
+        uri="https://$target:8888/aos-api?actn=lgout"
+        curl -i --insecure -X GET -H "$hdr1" -H "X-Auth-Token: $TOKEN" $uri
+    fi
+}
+
+aos_curl_get(){
+    if [ -z "$2" ]; 
+    then
+        echo "usage: $FUNCNAME <ip address> <uri>"
+    else
+        target=$1
+        hdr1="Content-Type:application/json+nicknames"
+        uri="https://$target:8888/aos-api$2"
+        curl -i --insecure -X GET -H "$hdr1" -H "X-Auth-Token: $TOKEN" $uri
+    fi
+}
+
+
+
+
+prawa_autorskie(){
+    if [ -z "$1" ]; 
+    then
+        echo "usage: $FUNCNAME <year-month>"
+    else
+        REMOTE=$(git config --get remote.origin.url)
+        AUTHOR=$(git config --get user.name)
+        PRAWA=$(git log --author "$AUTHOR" --pretty=format:'%ad %h %an %s' --date=short | sort -k 4 | sort -s -k 1,1.7 | grep $1)
+        echo "VERIFICATION DATA:"
+        echo "$PRAWA"
+        SHORT=$(echo "$PRAWA" | awk '{ print $5" "$2}' | sed -e 's/\[//' | sed -e 's/\]//')
+        UNIQUE_ARTF=$(echo "$SHORT" | awk '{ print $1 }' | uniq)
+        EXC_INPUT=''
+        for artf in $UNIQUE_ARTF
+        do
+            LINE=$(echo "$SHORT" | grep $artf | awk '{ print $2 }' | paste -sd ',' - | sed -e 's/,/, /g')
+            EXC_INPUT="$EXC_INPUT\n$artf: $LINE"
+        done
+        echo
+        echo "DATA FOR COPY PASTING:"
+        echo "Repo location: $REMOTE"
+        echo -e "$EXC_INPUT" | awk '{ print length, $0 }' | sort -nrs | cut -d' ' -f 2-
+    fi
+}
+
+source $HOME/bin/arc/arcanist/resources/shell/bash-completion
+

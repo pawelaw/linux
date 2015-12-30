@@ -13,7 +13,7 @@ autocmd BufEnter * :cd %:p:h
 " unnamedplus is a system register, for seamless coping across the OS
 
 set pastetoggle=<F2>
-set clipboard=unnamedplus
+set clipboard=unnamedplus,unnamed
 " maybe better unnamed - not sure what's the difference
 
 " Shortening the title lines with full path
