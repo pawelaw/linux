@@ -9,3 +9,4 @@ _fab_completion()
 }
 complete -F _fab_completion fab
 }
+

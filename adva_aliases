@@ -7,6 +7,8 @@ export WORKON_HOME=$HOME/AOS
 export PATH=$PATH:$HOME/bin/apache-maven-3.2.1/bin
 export PATH=$PATH:$HOME/bin/arc/arcanist/bin
 export AOS_SIT_AUTOMATION_PATH="$HOME/workspace/aos-sit-automation"
+export AOS_SDK="$HOME/workspace/aos_sdk"
+export AOS_WORKSPACE="$HOME/workspace"
 
 export AOS_GE112_ADDRESS=10.143.3.21
 export AOS_F8_ADDRESS=10.10.37.227
@@ -14,6 +16,8 @@ export AOS_F8_ADDRESS=10.10.37.227
 
 alias zookeeper='sudo /opt/adva/nc/zookeeper/bin/zkServer.sh'
 alias zkClient='sudo /opt/adva/nc/zookeeper/bin/zkCli.sh'
+
+alias aos_pull="cd $AOS_WORKSPACE/aos-nc-python-container; git pull; cd $AOS_WORKSPACE/aos-ne-python-container; git pull; cd $AOS_WORKSPACE/aos-ne-python-container-backends; git pull; cd $AOS_WORKSPACE/aos-common-python-container; git pull"
 
 alias aos_karaf='sudo /opt/adva/nc/app-tier-scala-container/bin/KARAF'
 alias aos_ssh_karaf="ssh-keygen -f '$HOME/.ssh/known_hosts' -R [localhost]:8101; ssh -p 8101 karaf@localhost"
@@ -24,9 +28,10 @@ alias aos_ssh_ge112="ssh root@$AOS_GE112_ADDRESS"
 alias aos_clean_mongo="mongo localhost/nc -u aos -p ChgMeNOW --eval \"db.getCollectionNames().map(function(collection) { var skip = ['system.indexes', 'system.users']; if (skip.indexOf(collection) == -1) { db[collection].drop(); }; })\""
 alias aos_clean_zookeeper=$HOME/workspace/aos-common-python-container/build/tools/clean_zk.py
 alias aos_restart_scala="aos_scala_container stop; aos_clean_mongo; aos_clean_zookeeper; aos_scala_container start"
-alias aos_link_adjuncts="rm ~/ec/share/cim/adjunct/* ; cp -s ~/workspace/aos-common-cim-aos-model/*/src/main/adjunct/*json ~/ec/share/cim/adjunct/"
-alias aos_copy_adjuncts="rm ~/ec/share/cim/adjunct/* ; cp ~/workspace/aos-common-cim-aos-model/*/src/main/adjunct/*json ~/ec/share/cim/adjunct/"
-export AOS_HOME="$HOME/ec"
+alias aos_link_adjuncts="rm $AOS_SDK/share/cim/adjunct/* ; cp -s ~/workspace/aos-common-cim-aos-model/*/src/main/adjunct/*json $AOS_SDK/share/cim/adjunct/"
+alias aos_copy_adjuncts="rm $AOS_SDK/share/cim/adjunct/* ; cp ~/workspace/aos-common-cim-aos-model/*/src/main/adjunct/*json $AOS_SDK/share/cim/adjunct/"
+alias aos_copy_model="rm $AOS_SDK/share/cim/json/* ; cp ~/workspace/aos-common-cim-aos-model/*/target/cim/*json $AOS_SDK/share/cim/json/"
+alias aos_sync_box="ssh-keygen -f '/home/wron/.ssh/known_hosts' -R 10.10.0.10; $HOME/workspace/aos-ne-python-container-backends/etc/sync_box.sh eth1 10.10.0.10 $AOS_SDK/share/cim"
 
 aos_apl_setup(){
     sudo modprobe tipc
@@ -47,10 +52,9 @@ aos_get_token(){
     then
         echo "usage: $FUNCNAME <ip address>"
     else
-        target=$1
-        hdr1="Content-Type:application/json+nicknames"
-        body='{"in":{"pswd":"CHGME.1","un":"admin"}}'
-        uri="https://$target:8888/aos-api?actn=lgin"
+        hdr1="Content-Type:application/json; ext=nn"
+        body='{"in":{"pswd":"CHGME.1a","un":"admin"}}'
+        uri="$1/auth?actn=lgin"
         export TOKEN="$(curl -i --silent --insecure -X POST -H "$hdr1" -d $body $uri | grep X-Auth-Token: | sed -e 's/X-Auth-Token: //g')"
         echo $TOKEN
     fi
@@ -61,9 +65,8 @@ aos_logout(){
     then
         echo "usage: $FUNCNAME <ip address>"
     else
-        target=$1
-        hdr1="Content-Type:application/json+nicknames"
-        uri="https://$target:8888/aos-api?actn=lgout"
+        hdr1="Content-Type:application/json; ext=nn"
+        uri="$1/auth?actn=lgout"
         curl -i --insecure -X GET -H "$hdr1" -H "X-Auth-Token: $TOKEN" $uri
     fi
 }
@@ -73,14 +76,22 @@ aos_curl_get(){
     then
         echo "usage: $FUNCNAME <ip address> <uri>"
     else
-        target=$1
-        hdr1="Content-Type:application/json+nicknames"
-        uri="https://$target:8888/aos-api$2"
-        curl -i --insecure -X GET -H "$hdr1" -H "X-Auth-Token: $TOKEN" $uri
+        hdr1="Content-Type:application/json; ext=nn"
+        curl -i --insecure -X GET -H "$hdr1" -H "X-Auth-Token: $TOKEN" $1$2
     fi
 }
 
-
+aos_curl_full_get(){
+    if [ -z "$1" ]; 
+    then
+        echo "usage: $FUNCNAME <hostname> <uri>"
+    else
+        aos_get_token $1
+        hdr1="Content-Type:application/json; ext=nn"
+        curl -i --insecure -X GET -H "$hdr1" -H "X-Auth-Token: $TOKEN" $1$2
+        aos_logout $1
+    fi
+}
 
 
 prawa_autorskie(){
@@ -90,23 +101,96 @@ prawa_autorskie(){
     else
         REMOTE=$(git config --get remote.origin.url)
         AUTHOR=$(git config --get user.name)
-        PRAWA=$(git log --author "$AUTHOR" --pretty=format:'%ad %h %an %s' --date=short | sort -k 4 | sort -s -k 1,1.7 | grep $1)
+        LONG=$(git log --author "$AUTHOR" --pretty=format:'%ad %h %an %s' --date=short | sort -k 4 | sort -s -k 1,1.7 | grep $1)
         echo "VERIFICATION DATA:"
-        echo "$PRAWA"
-        SHORT=$(echo "$PRAWA" | awk '{ print $5" "$2}' | sed -e 's/\[//' | sed -e 's/\]//')
-        UNIQUE_ARTF=$(echo "$SHORT" | awk '{ print $1 }' | uniq)
-        EXC_INPUT=''
-        for artf in $UNIQUE_ARTF
+        echo "$LONG"
+        SHORT=$(echo "$LONG" | awk '{ print $5" "$2}' | sed -e 's/\[//' | sed -e 's/\]//')
+        UNIQUE_ARTEFACT_IDS=$(echo "$SHORT" | awk '{ print $1 }' | uniq)
+        EXCEL_INPUT=''
+        for artf in $UNIQUE_ARTEFACT_IDS
         do
             LINE=$(echo "$SHORT" | grep $artf | awk '{ print $2 }' | paste -sd ',' - | sed -e 's/,/, /g')
-            EXC_INPUT="$EXC_INPUT\n$artf: $LINE"
+            EXCEL_INPUT="$EXCEL_INPUT\n$artf: $LINE"
         done
         echo
         echo "DATA FOR COPY PASTING:"
         echo "Repo location: $REMOTE"
-        echo -e "$EXC_INPUT" | awk '{ print length, $0 }' | sort -nrs | cut -d' ' -f 2-
+        echo -e "$EXCEL_INPUT" | awk '{ print length, $0 }' | sort -nrs | cut -d' ' -f 2-
     fi
 }
 
+
+# Aliasy barta:
+aos_scala_run_f() {
+                cd ~/workspace/aos-sit-automation/NetworkController/Automation/scala; ./scala_run.sh $1
+}
+
+model-loader() {
+                cd /opt/adva/nc/nc-model-loader
+                sed -i 's/"ip": "192.168.15.4",/"ip"\: "'`/sbin/ifconfig eth0 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}'`'",/' conf/managed-hosts.conf
+    sed -i 's/"ip": "192.168.15.4",/"ip"\: "'`/sbin/ifconfig eth0 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}'`'",/' conf/interfaces.conf
+    sudo python ./nc_model_loader.py
+}
+
+alias aos_common="cd ~/workspace/aos-common-python-container"
+alias aos_nc="cd ~/workspace/aos-nc-python-container"
+alias aos_ne="cd ~/workspace/aos-ne-python-container"
+alias aos_nac="cd ~/workspace/aos-nac-python-container"
+
+alias aos_reset="aos_common; build/reset_env.py; sudo rm -r /opt/adva/nc/app-tier-scala-container/data/*; sudo rm /var/opt/adva/log/aos/nc/*.*; model-loader"
+alias aos_karaf="sudo /opt/adva/nc/app-tier-scala-container/bin/karaf"
+alias aos_apl="cd ~/workspace/aos_sdk/etc/scripts; cp ~/run_apl_config.sh .; sudo ./run_apl.sh ~/workspace/aos_sdk/etc/scripts/run_apl_config.sh"
+
+alias aos_if_deb="cd /opt/adva/nc/if-tier-python-container/bin; sudo ./if_start.sh --container_id=if-tier-python-container --config_dir=/opt/adva/nc/if-tier-python-container/config"
+alias aos_app_deb="cd /opt/adva/nc/app-tier-python-container/bin; sudo ./app_start.sh --container_id=app-tier-python-container --config_dir=/opt/adva/nc/app-tier-python-container/config"
+
+alias aos_create_ve="cd ~/workspace/aos-common-python-container/build; fab create_ve_all"
+alias aos_develop="cd ~/workspace/aos-common-python-container/build; fab develop_all"
+alias aos_lint="cd ~/workspace/aos-common-python-container/build; fab pylint"
+
+
+alias aos_pull="aos_common; git pull origin master; aos_nc; git pull origin master; aos_ne; git pull origin master; aos_common; cd build"
+
+alias aos_scala_logs="tail -f /var/opt/adva/log/aos/nc/bart-VirtualBox_app-tier-scala-container.log"
+
+alias aos_stop_python="kill $(ps aux | grep '[p]ython' | awk '{print $2}')"
+
+alias aos_get_app="wget --user=read --password=read9# https://artifacts.aos-cloud.com/artifactory/libs-snapshot-local/com/adva/aos/nc/python/app-tier-python-container/0.0.2-SNAPSHOT/app-tier-python-container-0.0.2-SNAPSHOT.deb"
+alias aos_get_if="wget --user=read --password=read9# https://artifacts.aos-cloud.com/artifactory/libs-snapshot-local/com/adva/aos/nc/python/if-tier-python-container/0.0.2-SNAPSHOT/if-tier-python-container-0.0.2-SNAPSHOT.deb"
+
+alias aos_sock="sudo rm /tmp/*.sock"
+alias aos_clean_apl="rm -r ~/workspace/aos_sdk/db/MITDB; rm ~/workspace/aos_sdk/db/tfserver.lock"
+
+alias aos_zk_restart="sudo /opt/adva/nc/zookeeper/bin/zkServer.sh restart"
+alias aos_zk_cli="sudo /opt/adva/nc/zookeeper/bin/zkCli.sh"
+
+alias aos_telnet="telnet 127.0.0.1 8887"
+alias aos_ssh_karaf="ssh -p 8101 karaf@localhost"
+
+alias aos_mongo="mongo nc -u aos -p ChgMeNOW"
+alias aos_mongo_snap="mongo nc_snapshots -u aos -p ChgMeNOW"
+alias aos_mongo_transactions="mongo nc_transactions -u aos -p ChgMeNOW"
+alias aos_mongo_undoredo="mongo nc_undoredo -u aos -p ChgMeNOW"
+
+alias aos_mongo_dump="mongodump -u aos -p ChgMeNOW --db nc --out aos_mongo"
+alias aos_mongo_restore="mongorestore -u aos -p ChgMeNOW --db nc aos_mongo"
+
+
+alias aos_ede="sudo ./rehome/reho -e ~/workspace:workspace ."
+alias aos_mvn_clean="aos_common; cd build; mvn clean; aos_nc; cd build; mvn clean; aos_ne; cd build; mvn clean; aos_common; cd build"
+
+alias aos_python_test="aos_common; cd build; ./python-test.sh"
+alias aos_python_unit="workon AOS_BUILD_VE_dev; aos_common; cd build; nosetests -sv aostests.unit"
+
+alias aos_log_python_test="lnav ~/python_test.log"
+alias aos_version="dpkg -s app-tier-scala-container"
+alias aos_remove="sudo apt-get remove app-tier-scala-container"
+
+alias aos_token="python ~/get_token.py"
+
+alias aos_ne_link_model="cd ~/workspace/aos-ne-python-container-backends/etc; ./link_model_repo.sh ~/workspace/aos-common-cim-aos-model ~/workspace/aos_sdk/share/cim"
+
+
 source $HOME/bin/arc/arcanist/resources/shell/bash-completion
+
 
