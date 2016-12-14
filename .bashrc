@@ -5,8 +5,10 @@
 
 alias mount-host='sudo mount -t vboxsf share ~/share'
 
-source $HOME/linux/adva_aliases
+source $HOME/workspace/aos-common-python-container/build/.bash_aliases
 source $HOME/linux/uio_aliases
+export PATH=$PATH:$HOME/bin/arc/arcanist/bin
+# source $HOME/bin/arc/arcanist/resources/shell/bash-completion
 
 
 # gvim () { command gvim --remote-silent "$@" || command gvim "$@"; }
